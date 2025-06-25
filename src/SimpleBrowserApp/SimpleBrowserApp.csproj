@@ -6,7 +6,31 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>appicon.ico</ApplicationIcon>
+    <SignAssembly>False</SignAssembly>
+	  
+	<Now>$([System.DateTime]::Now.ToString("yyyyMMddHHmm"))</Now>
+	<BuildYear>$([System.DateTime]::Now.ToString("yy"))</BuildYear>
+	<BuildMonth>$([System.DateTime]::Now.ToString("MM"))</BuildMonth>
+	<BuildDay>$([System.DateTime]::Now.ToString("dd"))</BuildDay>
+	<BuildHour>$([System.DateTime]::Now.ToString("HH"))</BuildHour>
+	<BuildMinute>$([System.DateTime]::Now.ToString("mm"))</BuildMinute>
+
+	<VersionString>0.$(BuildYear).$(BuildMonth)$(BuildDay).$(BuildHour)$(BuildMinute)</VersionString>
+
+	<AssemblyVersion>$(VersionString)</AssemblyVersion>
+	<FileVersion>$(VersionString)</FileVersion>
+	<InformationalVersion>$(VersionString)</InformationalVersion>
+
+	<Product>Simple Browser App</Product>
+	<Company>Explorers of the Binary World / a32kita</Company>
+	<Description>A customizable WPF desktop application featuring a built-in browser</Description>
+	<Copyright>Copyright (c) 2025 Explorers of the Binary World.</Copyright>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="appicon.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3296.44" />

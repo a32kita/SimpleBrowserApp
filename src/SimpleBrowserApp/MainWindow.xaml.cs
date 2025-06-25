@@ -3,13 +3,6 @@ using System.IO;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace SimpleBrowserApp
 {
@@ -35,9 +28,9 @@ namespace SimpleBrowserApp
 
             // Load config
             string exePath = System.Reflection.Assembly.GetEntryAssembly()?.Location ?? "";
-            string exeDir = System.IO.Path.GetDirectoryName(exePath) ?? "";
-            string exeName = System.IO.Path.GetFileNameWithoutExtension(exePath);
-            string configPath = System.IO.Path.Combine(exeDir, $"{exeName}-config.json");
+            string exeDir = Path.GetDirectoryName(exePath) ?? "";
+            string exeName = Path.GetFileNameWithoutExtension(exePath);
+            string configPath = Path.Combine(exeDir, $"{exeName}-config.json");
 
             // Set defaults
             string? title = null;
@@ -106,17 +99,31 @@ namespace SimpleBrowserApp
             AlwaysOnTopMenuItem.Unchecked += AlwaysOnTopMenuItem_Unchecked;
             ExitMenuItem.Click += ExitMenuItem_Click;
 
-            // Set WebView2 source to html_path in the executable directory
-            string htmlFullPath = System.IO.Path.Combine(exeDir, htmlRelPath);
-            if (File.Exists(htmlFullPath))
+            // Set WebView2 source to html_path (supports http(s), absolute, and relative paths)
+            Uri? browserUri = null;
+            if (!string.IsNullOrEmpty(htmlRelPath))
             {
-                Browser.Source = new Uri(htmlFullPath, UriKind.Absolute);
+                if (htmlRelPath.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                    htmlRelPath.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Web URL
+                    browserUri = new Uri(htmlRelPath, UriKind.Absolute);
+                }
+                else if (Path.IsPathRooted(htmlRelPath))
+                {
+                    // Absolute file path
+                    if (File.Exists(htmlRelPath))
+                        browserUri = new Uri(htmlRelPath, UriKind.Absolute);
+                }
+                else
+                {
+                    // Relative path from exeDir
+                    string htmlFullPath = Path.Combine(exeDir, htmlRelPath);
+                    if (File.Exists(htmlFullPath))
+                        browserUri = new Uri(htmlFullPath, UriKind.Absolute);
+                }
             }
-            else
-            {
-                // Fallback: try to show a blank page or error
-                Browser.Source = new Uri("about:blank");
-            }
+            Browser.Source = browserUri ?? new Uri("about:blank");
         }
 
         // Toggle Topmost property when the menu item is checked/unchecked
