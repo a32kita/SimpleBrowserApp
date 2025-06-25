@@ -1,0 +1,8 @@
+{
+  "title": "Simple Browser App",
+  "html_path": "app.html",
+  "topmost": false,
+  "menu": true,
+  "window_width": 800,
+  "window_height": 600
+}
