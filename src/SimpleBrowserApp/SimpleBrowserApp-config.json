@@ -4,5 +4,6 @@
   "topmost": false,
   "menu": true,
   "window_width": 800,
-  "window_height": 600
+  "window_height": 600,
+  "window_icon": "appicon_sub.ico"
 }

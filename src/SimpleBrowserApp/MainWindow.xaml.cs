@@ -20,6 +20,8 @@ namespace SimpleBrowserApp
             public int? window_width { get; set; }
             public int? window_height { get; set; }
             public string? html_path { get; set; }
+            // Add window_icon property for icon path (.ico only)
+            public string? window_icon { get; set; }
         }
 
         public MainWindow()
@@ -39,6 +41,7 @@ namespace SimpleBrowserApp
             int windowWidth = 300;
             int windowHeight = 300;
             string htmlRelPath = "app.html";
+            string? windowIconPath = null;
 
             if (File.Exists(configPath))
             {
@@ -53,6 +56,7 @@ namespace SimpleBrowserApp
                     windowWidth = config?.window_width ?? 300;
                     windowHeight = config?.window_height ?? 300;
                     htmlRelPath = config?.html_path ?? "app.html";
+                    windowIconPath = config?.window_icon ?? null;
                 }
                 catch (Exception ex)
                 {
@@ -98,6 +102,28 @@ namespace SimpleBrowserApp
             AlwaysOnTopMenuItem.Checked += AlwaysOnTopMenuItem_Checked;
             AlwaysOnTopMenuItem.Unchecked += AlwaysOnTopMenuItem_Unchecked;
             ExitMenuItem.Click += ExitMenuItem_Click;
+
+            // Set window icon if window_icon is specified and valid (.ico, exists)
+            if (!string.IsNullOrEmpty(windowIconPath))
+            {
+                string resolvedIconPath = windowIconPath;
+                if (!Path.IsPathRooted(resolvedIconPath))
+                {
+                    resolvedIconPath = Path.Combine(exeDir, resolvedIconPath);
+                }
+                if (File.Exists(resolvedIconPath) && Path.GetExtension(resolvedIconPath).Equals(".ico", StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        this.Icon = new System.Windows.Media.Imaging.BitmapImage(new Uri(resolvedIconPath, UriKind.Absolute));
+                    }
+                    catch
+                    {
+                        // If icon loading fails, fallback to default icon (do nothing)
+                    }
+                }
+                // else: fallback to default icon (do nothing)
+            }
 
             // Set WebView2 source to html_path (supports http(s), absolute, and relative paths)
             Uri? browserUri = null;
