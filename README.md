@@ -5,8 +5,9 @@ A customizable WPF desktop application featuring a built-in browser (WebView2) a
 
 ## Features
 - Displays a local HTML file or a web page (http/https URL) in a browser view (WebView2).
-- Application window title, size, menu visibility, and "Always on Top" state are configurable via JSON.
+- Application window title, size, menu visibility, "Always on Top" state, and window icon are configurable via JSON.
 - The HTML file or URL to display can be specified in the config file (relative path, absolute path, or URL).
+- The window icon can be specified as a `.ico` file (full path or relative to the executable); if omitted or invalid, the default executable icon is used.
 - Menu includes:
   - "Always on Top" (checkable)
   - "Exit"
@@ -24,6 +25,7 @@ All properties are optional; defaults are used if not specified.
 | window_width  | number  | Window width in pixels.                                                                                       | 300          |
 | window_height | number  | Window height in pixels.                                                                                      | 300          |
 | html_path     | string  | Path or URL to display in the browser. Supports:<br> - Relative path from executable<br> - Absolute file path<br> - http/https URL | "app.html"   |
+| window_icon   | string  | Path to a `.ico` file to use as the window icon.<br>Supports absolute path or path relative to the executable.<br>If omitted, invalid, or not found, the default executable icon is used.<br>**Must be `.ico` extension.** | null         |
 
 ### Example `SimpleBrowserApp-config.json`
 ```json
@@ -33,7 +35,8 @@ All properties are optional; defaults are used if not specified.
   "menu": true,
   "window_width": 900,
   "window_height": 600,
-  "html_path": "app.html"
+  "html_path": "app.html",
+  "window_icon": "appicon.ico"
 }
 ```
 #### Example for absolute path
@@ -52,13 +55,22 @@ All properties are optional; defaults are used if not specified.
 ## How It Works
 - On startup, the app loads `[ExecutableName]-config.json` from the executable's directory.
 - All settings are applied immediately:
-  - Window title, size, and "Always on Top" state.
+  - Window title, size, "Always on Top" state, and window icon.
   - Menu visibility and "Always on Top" menu check state.
   - The specified HTML file or URL is loaded into the browser view.
     - If `html_path` starts with `http://` or `https://`, it is loaded as a web page.
     - If `html_path` is an absolute path, that file is loaded.
     - Otherwise, it is treated as a relative path from the executable directory.
+  - If `window_icon` is specified and points to an existing `.ico` file (absolute or relative to the executable), that icon is used for the window. If omitted, invalid, or not found, the default executable icon is used.
 - If a property is missing, the default value (see table above) is used.
+
+### `window_icon` property details
+- **Type:** string (optional)
+- **Format:** Path to a `.ico` file. Can be an absolute path or a path relative to the executable.
+- **Behavior:**
+  - If `window_icon` is `null`, omitted, or not a valid `.ico` file, the default executable icon is used.
+  - If the file does not exist or the extension is not `.ico`, the default icon is used.
+  - If a valid `.ico` file is specified, it is used as the window icon.
 
 ## Requirements
 - .NET 8.0 or later
