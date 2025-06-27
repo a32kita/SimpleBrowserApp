@@ -13,10 +13,10 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Menu Grid.Row="0">
-            <MenuItem Header="アプリケーション(_A)">
-                <MenuItem Header="常に手前に表示する(_T)" Name="AlwaysOnTopMenuItem" IsCheckable="True"/>
+            <MenuItem Header="Application(_A)">
+                <MenuItem Header="Always on Top(_T)" Name="AlwaysOnTopMenuItem" IsCheckable="True"/>
                 <Separator/>
-                <MenuItem Header="終了(_X)" Name="ExitMenuItem"/>
+                <MenuItem Header="Exit(_X)" Name="ExitMenuItem"/>
             </MenuItem>
         </Menu>
         <!-- WebView2 browser control -->

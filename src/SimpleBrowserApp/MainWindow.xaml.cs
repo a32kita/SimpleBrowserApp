@@ -22,6 +22,18 @@ namespace SimpleBrowserApp
             public string? html_path { get; set; }
             // Add window_icon property for icon path (.ico only)
             public string? window_icon { get; set; }
+            // Add window_state_autosave property for window state autosave
+            public bool? window_state_autosave { get; set; }
+        }
+
+        // Class for saving/restoring window state
+        private class WindowStateInfo
+        {
+            public double Left { get; set; }
+            public double Top { get; set; }
+            public double Width { get; set; }
+            public double Height { get; set; }
+            public WindowState WindowState { get; set; }
         }
 
         public MainWindow()
@@ -42,6 +54,7 @@ namespace SimpleBrowserApp
             int windowHeight = 300;
             string htmlRelPath = "app.html";
             string? windowIconPath = null;
+            bool windowStateAutosave = true; // default true
 
             if (File.Exists(configPath))
             {
@@ -57,6 +70,7 @@ namespace SimpleBrowserApp
                     windowHeight = config?.window_height ?? windowHeight;
                     htmlRelPath = config?.html_path ?? htmlRelPath;
                     windowIconPath = config?.window_icon ?? windowIconPath;
+                    windowStateAutosave = config?.window_state_autosave ?? true; // default true
                 }
                 catch (Exception ex)
                 {
@@ -69,6 +83,34 @@ namespace SimpleBrowserApp
             this.Topmost = topmost;
             this.Width = windowWidth;
             this.Height = windowHeight;
+
+            // Restore window state if autosave enabled
+            string windowStatePath = Path.Combine(exeDir, $"{exeName}-windowstate.json");
+            if (windowStateAutosave && File.Exists(windowStatePath))
+            {
+                try
+                {
+                    string stateJson = File.ReadAllText(windowStatePath);
+                    var state = JsonSerializer.Deserialize<WindowStateInfo>(stateJson);
+                    if (state != null)
+                    {
+                        // Restore position and size
+                        this.Left = state.Left;
+                        this.Top = state.Top;
+                        this.Width = state.Width;
+                        this.Height = state.Height;
+                        // Restore window state (Normal/Maximized only)
+                        if (state.WindowState == WindowState.Maximized || state.WindowState == WindowState.Normal)
+                        {
+                            this.WindowState = state.WindowState;
+                        }
+                    }
+                }
+                catch
+                {
+                    // Ignore errors and use default position/size
+                }
+            }
 
             // Menu visibility
             if (this.FindName("AlwaysOnTopMenuItem") is MenuItem alwaysOnTopMenuItem)
@@ -102,6 +144,31 @@ namespace SimpleBrowserApp
             AlwaysOnTopMenuItem.Checked += AlwaysOnTopMenuItem_Checked;
             AlwaysOnTopMenuItem.Unchecked += AlwaysOnTopMenuItem_Unchecked;
             ExitMenuItem.Click += ExitMenuItem_Click;
+
+            // Register window closing event for state autosave
+            if (windowStateAutosave)
+            {
+                this.Closing += (s, e) =>
+                {
+                    try
+                    {
+                        var state = new WindowStateInfo
+                        {
+                            Left = this.RestoreBounds.Left,
+                            Top = this.RestoreBounds.Top,
+                            Width = this.RestoreBounds.Width,
+                            Height = this.RestoreBounds.Height,
+                            WindowState = this.WindowState
+                        };
+                        string stateJson = JsonSerializer.Serialize(state, new JsonSerializerOptions { WriteIndented = true });
+                        File.WriteAllText(windowStatePath, stateJson);
+                    }
+                    catch
+                    {
+                        // Ignore errors on save
+                    }
+                };
+            }
 
             // Set window icon if window_icon is specified and valid (.ico, exists)
             if (!string.IsNullOrEmpty(windowIconPath))
