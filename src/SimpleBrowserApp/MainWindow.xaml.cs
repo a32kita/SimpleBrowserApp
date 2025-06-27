@@ -50,13 +50,13 @@ namespace SimpleBrowserApp
                     string json = File.ReadAllText(configPath);
                     var config = JsonSerializer.Deserialize<AppConfig>(json);
 
-                    title = config?.title ?? null;
-                    topmost = config?.topmost ?? false;
-                    menuVisible = config?.menu ?? false;
-                    windowWidth = config?.window_width ?? 300;
-                    windowHeight = config?.window_height ?? 300;
-                    htmlRelPath = config?.html_path ?? "app.html";
-                    windowIconPath = config?.window_icon ?? null;
+                    title = config?.title ?? title;
+                    topmost = config?.topmost ?? topmost;
+                    menuVisible = config?.menu ?? menuVisible;
+                    windowWidth = config?.window_width ?? windowWidth;
+                    windowHeight = config?.window_height ?? windowHeight;
+                    htmlRelPath = config?.html_path ?? htmlRelPath;
+                    windowIconPath = config?.window_icon ?? windowIconPath;
                 }
                 catch (Exception ex)
                 {
