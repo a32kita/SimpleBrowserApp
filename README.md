@@ -82,3 +82,7 @@ All properties are optional; defaults are used if not specified.
 2. Build the solution.
 3. Place your HTML file (e.g., `app.html`) and the config file in the same directory as the executable, or specify an absolute path or URL in the config.
 4. Run the application.
+
+## License
+This project is licensed under the MIT License.  
+See the [LICENSE](./LICENSE) file for details.
