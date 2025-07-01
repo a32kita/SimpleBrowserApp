@@ -20,10 +20,18 @@ namespace SimpleBrowserApp
             public int? window_width { get; set; }
             public int? window_height { get; set; }
             public string? html_path { get; set; }
+
             // Add window_icon property for icon path (.ico only)
             public string? window_icon { get; set; }
+
             // Add window_state_autosave property for window state autosave
             public bool? window_state_autosave { get; set; }
+
+            // Add use_page_title property for using the page title as window title
+            public bool? use_page_title { get; set; }
+
+            // Add use_browser_context_menu property for controlling WebView2 context menu
+            public bool? use_browser_context_menu { get; set; }
         }
 
         // Class for saving/restoring window state
@@ -55,6 +63,8 @@ namespace SimpleBrowserApp
             string htmlRelPath = "app.html";
             string? windowIconPath = null;
             bool windowStateAutosave = true; // default true
+            bool usePageTitle = false; // default false
+            bool useBrowserContextMenu = true; // default true
 
             if (File.Exists(configPath))
             {
@@ -70,7 +80,9 @@ namespace SimpleBrowserApp
                     windowHeight = config?.window_height ?? windowHeight;
                     htmlRelPath = config?.html_path ?? htmlRelPath;
                     windowIconPath = config?.window_icon ?? windowIconPath;
-                    windowStateAutosave = config?.window_state_autosave ?? true; // default true
+                    windowStateAutosave = config?.window_state_autosave ?? windowStateAutosave;
+                    usePageTitle = config?.use_page_title ?? usePageTitle;
+                    useBrowserContextMenu = config?.use_browser_context_menu ?? useBrowserContextMenu;
                 }
                 catch (Exception ex)
                 {
@@ -217,6 +229,40 @@ namespace SimpleBrowserApp
                 }
             }
             Browser.Source = browserUri ?? new Uri("about:blank");
+
+            // --- use_page_title / use_browser_context_menu: WebView2 event hooks ---
+            if (usePageTitle || !useBrowserContextMenu)
+            {
+                // WebView2 の CoreWebView2 準備完了時にイベント購読
+                Browser.CoreWebView2InitializationCompleted += (s, e) =>
+                {
+                    if (Browser.CoreWebView2 != null)
+                    {
+                        // use_page_title: ページタイトルをウィンドウタイトルに反映
+                        if (usePageTitle)
+                        {
+                            // 初回タイトル反映
+                            if (!string.IsNullOrEmpty(Browser.CoreWebView2.DocumentTitle))
+                            {
+                                this.Title = Browser.CoreWebView2.DocumentTitle;
+                            }
+                            // タイトル変更時に MainWindow のタイトルを更新
+                            Browser.CoreWebView2.DocumentTitleChanged += (sender, args) =>
+                            {
+                                this.Title = Browser.CoreWebView2.DocumentTitle;
+                            };
+                        }
+                        // use_browser_context_menu: 標準コンテキストメニュー抑止
+                        if (!useBrowserContextMenu)
+                        {
+                            Browser.CoreWebView2.ContextMenuRequested += (sender, args) =>
+                            {
+                                args.Handled = true;
+                            };
+                        }
+                    }
+                };
+            }
         }
 
         // Toggle Topmost property when the menu item is checked/unchecked

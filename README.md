@@ -26,6 +26,9 @@ All properties are optional; defaults are used if not specified.
 | window_height | number  | Window height in pixels.                                                                                      | 300          |
 | html_path     | string  | Path or URL to display in the browser. Supports:<br> - Relative path from executable<br> - Absolute file path<br> - http/https URL | "app.html"   |
 | window_icon   | string  | Path to a `.ico` file to use as the window icon.<br>Supports absolute path or path relative to the executable.<br>If omitted, invalid, or not found, the default executable icon is used.<br>**Must be `.ico` extension.** | null         |
+| window_state_autosave | bool | Whether to automatically save and restore the window's position, size, and state (maximized/normal) on close and next launch. | true |
+| use_page_title | bool | If true, the window title will follow the currently displayed page's title in the browser view (WebView2). If false, the title is fixed as specified by the `title` property or default. | false |
+| use_browser_context_menu | bool | If true, the standard WebView2 context menu (right-click menu) is enabled. If false, the context menu is disabled. | true |
 
 ### Example `SimpleBrowserApp-config.json`
 ```json
@@ -39,6 +42,27 @@ All properties are optional; defaults are used if not specified.
   "window_icon": "appicon.ico"
 }
 ```
+#### Example with use_browser_context_menu disabled
+```json
+{
+  "use_browser_context_menu": false
+}
+```
+
+#### Example with use_page_title enabled
+```json
+{
+  "use_page_title": true
+}
+```
+
+#### Example with window_state_autosave disabled
+```json
+{
+  "window_state_autosave": false
+}
+```
+
 #### Example for absolute path
 ```json
 {
@@ -53,6 +77,29 @@ All properties are optional; defaults are used if not specified.
 ```
 
 ## How It Works
+
+### `use_browser_context_menu` property details
+- **Type:** bool (optional)
+- **Default:** true
+- **Behavior:**
+  - If `true` or omitted, the standard WebView2 context menu (right-click menu) is enabled.
+  - If `false`, right-clicking in the browser view will not show the context menu.
+
+### `use_page_title` property details
+- **Type:** bool (optional)
+- **Default:** false
+- **Behavior:**
+  - If `true`, the window title will always reflect the title of the currently displayed page in the browser view (WebView2).
+  - The window title will update automatically if the page title changes (e.g., via JavaScript or navigation).
+  - If `false` or omitted, the window title is fixed as specified by the `title` property or the default.
+
+### `window_state_autosave` property details
+- **Type:** bool (optional)
+- **Default:** true
+- **Behavior:**
+  - If `true` or omitted, the app will automatically save the window's position, size, and state (maximized/normal) on close, and restore them on next launch.
+  - If `false`, the window will always open with the size and position specified by `window_width`/`window_height` (or defaults), and will not remember its last state.
+
 - On startup, the app loads `[ExecutableName]-config.json` from the executable's directory.
 - All settings are applied immediately:
   - Window title, size, "Always on Top" state, and window icon.
