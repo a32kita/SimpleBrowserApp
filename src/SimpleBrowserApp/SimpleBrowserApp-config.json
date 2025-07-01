@@ -1,5 +1,6 @@
 {
   "title": "Simple Browser App",
+  "use_page_title": false,
   "html_path": "app.html",
   "topmost": false,
   "menu": true,

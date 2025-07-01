@@ -24,6 +24,8 @@ namespace SimpleBrowserApp
             public string? window_icon { get; set; }
             // Add window_state_autosave property for window state autosave
             public bool? window_state_autosave { get; set; }
+            // Add use_page_title property for using the page title as window title
+            public bool? use_page_title { get; set; }
         }
 
         // Class for saving/restoring window state
@@ -55,6 +57,7 @@ namespace SimpleBrowserApp
             string htmlRelPath = "app.html";
             string? windowIconPath = null;
             bool windowStateAutosave = true; // default true
+            bool usePageTitle = false; // default false
 
             if (File.Exists(configPath))
             {
@@ -71,6 +74,7 @@ namespace SimpleBrowserApp
                     htmlRelPath = config?.html_path ?? htmlRelPath;
                     windowIconPath = config?.window_icon ?? windowIconPath;
                     windowStateAutosave = config?.window_state_autosave ?? true; // default true
+                    usePageTitle = config?.use_page_title ?? false; // default false
                 }
                 catch (Exception ex)
                 {
@@ -217,6 +221,28 @@ namespace SimpleBrowserApp
                 }
             }
             Browser.Source = browserUri ?? new Uri("about:blank");
+
+            // --- use_page_title: Use page title as window title if enabled ---
+            if (usePageTitle)
+            {
+                // WebView2 の CoreWebView2 準備完了時にイベント購読
+                Browser.CoreWebView2InitializationCompleted += (s, e) =>
+                {
+                    if (Browser.CoreWebView2 != null)
+                    {
+                        // 初回タイトル反映
+                        if (!string.IsNullOrEmpty(Browser.CoreWebView2.DocumentTitle))
+                        {
+                            this.Title = Browser.CoreWebView2.DocumentTitle;
+                        }
+                        // タイトル変更時に MainWindow のタイトルを更新
+                        Browser.CoreWebView2.DocumentTitleChanged += (sender, args) =>
+                        {
+                            this.Title = Browser.CoreWebView2.DocumentTitle;
+                        };
+                    }
+                };
+            }
         }
 
         // Toggle Topmost property when the menu item is checked/unchecked

@@ -27,6 +27,7 @@ All properties are optional; defaults are used if not specified.
 | html_path     | string  | Path or URL to display in the browser. Supports:<br> - Relative path from executable<br> - Absolute file path<br> - http/https URL | "app.html"   |
 | window_icon   | string  | Path to a `.ico` file to use as the window icon.<br>Supports absolute path or path relative to the executable.<br>If omitted, invalid, or not found, the default executable icon is used.<br>**Must be `.ico` extension.** | null         |
 | window_state_autosave | bool | Whether to automatically save and restore the window's position, size, and state (maximized/normal) on close and next launch. | true |
+| use_page_title | bool | If true, the window title will follow the currently displayed page's title in the browser view (WebView2). If false, the title is fixed as specified by the `title` property or default. | false |
 
 ### Example `SimpleBrowserApp-config.json`
 ```json
@@ -40,6 +41,13 @@ All properties are optional; defaults are used if not specified.
   "window_icon": "appicon.ico"
 }
 ```
+#### Example with use_page_title enabled
+```json
+{
+  "use_page_title": true
+}
+```
+
 #### Example with window_state_autosave disabled
 ```json
 {
@@ -61,6 +69,14 @@ All properties are optional; defaults are used if not specified.
 ```
 
 ## How It Works
+
+### `use_page_title` property details
+- **Type:** bool (optional)
+- **Default:** false
+- **Behavior:**
+  - If `true`, the window title will always reflect the title of the currently displayed page in the browser view (WebView2).
+  - The window title will update automatically if the page title changes (e.g., via JavaScript or navigation).
+  - If `false` or omitted, the window title is fixed as specified by the `title` property or the default.
 
 ### `window_state_autosave` property details
 - **Type:** bool (optional)
