@@ -20,12 +20,16 @@ namespace SimpleBrowserApp
             public int? window_width { get; set; }
             public int? window_height { get; set; }
             public string? html_path { get; set; }
+
             // Add window_icon property for icon path (.ico only)
             public string? window_icon { get; set; }
+
             // Add window_state_autosave property for window state autosave
             public bool? window_state_autosave { get; set; }
+
             // Add use_page_title property for using the page title as window title
             public bool? use_page_title { get; set; }
+
             // Add use_browser_context_menu property for controlling WebView2 context menu
             public bool? use_browser_context_menu { get; set; }
         }
@@ -76,9 +80,9 @@ namespace SimpleBrowserApp
                     windowHeight = config?.window_height ?? windowHeight;
                     htmlRelPath = config?.html_path ?? htmlRelPath;
                     windowIconPath = config?.window_icon ?? windowIconPath;
-                    windowStateAutosave = config?.window_state_autosave ?? true; // default true
-                    usePageTitle = config?.use_page_title ?? false; // default false
-                    useBrowserContextMenu = config?.use_browser_context_menu ?? true; // default true
+                    windowStateAutosave = config?.window_state_autosave ?? windowStateAutosave;
+                    usePageTitle = config?.use_page_title ?? usePageTitle;
+                    useBrowserContextMenu = config?.use_browser_context_menu ?? useBrowserContextMenu;
                 }
                 catch (Exception ex)
                 {
