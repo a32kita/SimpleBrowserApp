@@ -26,6 +26,7 @@ All properties are optional; defaults are used if not specified.
 | window_height | number  | Window height in pixels.                                                                                      | 300          |
 | html_path     | string  | Path or URL to display in the browser. Supports:<br> - Relative path from executable<br> - Absolute file path<br> - http/https URL | "app.html"   |
 | window_icon   | string  | Path to a `.ico` file to use as the window icon.<br>Supports absolute path or path relative to the executable.<br>If omitted, invalid, or not found, the default executable icon is used.<br>**Must be `.ico` extension.** | null         |
+| window_state_autosave | bool | Whether to automatically save and restore the window's position, size, and state (maximized/normal) on close and next launch. | true |
 
 ### Example `SimpleBrowserApp-config.json`
 ```json
@@ -39,6 +40,13 @@ All properties are optional; defaults are used if not specified.
   "window_icon": "appicon.ico"
 }
 ```
+#### Example with window_state_autosave disabled
+```json
+{
+  "window_state_autosave": false
+}
+```
+
 #### Example for absolute path
 ```json
 {
@@ -53,6 +61,14 @@ All properties are optional; defaults are used if not specified.
 ```
 
 ## How It Works
+
+### `window_state_autosave` property details
+- **Type:** bool (optional)
+- **Default:** true
+- **Behavior:**
+  - If `true` or omitted, the app will automatically save the window's position, size, and state (maximized/normal) on close, and restore them on next launch.
+  - If `false`, the window will always open with the size and position specified by `window_width`/`window_height` (or defaults), and will not remember its last state.
+
 - On startup, the app loads `[ExecutableName]-config.json` from the executable's directory.
 - All settings are applied immediately:
   - Window title, size, "Always on Top" state, and window icon.
