@@ -7,5 +7,6 @@
   "window_width": 800,
   "window_height": 600,
   "window_icon": "appicon_sub.ico",
-  "window_state_autosave": true
+  "window_state_autosave": true,
+  "use_browser_context_menu": true
 }

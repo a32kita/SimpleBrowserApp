@@ -28,6 +28,7 @@ All properties are optional; defaults are used if not specified.
 | window_icon   | string  | Path to a `.ico` file to use as the window icon.<br>Supports absolute path or path relative to the executable.<br>If omitted, invalid, or not found, the default executable icon is used.<br>**Must be `.ico` extension.** | null         |
 | window_state_autosave | bool | Whether to automatically save and restore the window's position, size, and state (maximized/normal) on close and next launch. | true |
 | use_page_title | bool | If true, the window title will follow the currently displayed page's title in the browser view (WebView2). If false, the title is fixed as specified by the `title` property or default. | false |
+| use_browser_context_menu | bool | If true, the standard WebView2 context menu (right-click menu) is enabled. If false, the context menu is disabled. | true |
 
 ### Example `SimpleBrowserApp-config.json`
 ```json
@@ -41,6 +42,13 @@ All properties are optional; defaults are used if not specified.
   "window_icon": "appicon.ico"
 }
 ```
+#### Example with use_browser_context_menu disabled
+```json
+{
+  "use_browser_context_menu": false
+}
+```
+
 #### Example with use_page_title enabled
 ```json
 {
@@ -69,6 +77,13 @@ All properties are optional; defaults are used if not specified.
 ```
 
 ## How It Works
+
+### `use_browser_context_menu` property details
+- **Type:** bool (optional)
+- **Default:** true
+- **Behavior:**
+  - If `true` or omitted, the standard WebView2 context menu (right-click menu) is enabled.
+  - If `false`, right-clicking in the browser view will not show the context menu.
 
 ### `use_page_title` property details
 - **Type:** bool (optional)
