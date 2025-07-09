@@ -10,6 +10,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Menu Grid.Row="0">
@@ -18,8 +19,15 @@
                 <Separator/>
                 <MenuItem Header="Exit(_X)" Name="ExitMenuItem"/>
             </MenuItem>
+            <MenuItem Header="View(_V)">
+                <MenuItem Header="Zoom In(_U)" Name="ZoomInMenuItem"/>
+                <MenuItem Header="Zoom Out(_D)" Name="ZoomOutMenuItem"/>
+                <MenuItem Header="Reset Zoom(_R)" Name="ResetZoomMenuItem"/>
+            </MenuItem>
         </Menu>
+        <!-- Address viewer textbox (read-only, visibility controlled in code-behind) -->
+        <TextBox x:Name="AddressTextBox" Grid.Row="1" IsReadOnly="True" Margin="2,2,2,2" Visibility="Collapsed"/>
         <!-- WebView2 browser control -->
-        <wv2:WebView2 x:Name="Browser" Grid.Row="1" Margin="0"/>
+        <wv2:WebView2 x:Name="Browser" Grid.Row="2" Margin="0"/>
     </Grid>
 </Window>

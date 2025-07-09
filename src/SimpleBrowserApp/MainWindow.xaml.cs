@@ -32,6 +32,9 @@ namespace SimpleBrowserApp
 
             // Add use_browser_context_menu property for controlling WebView2 context menu
             public bool? use_browser_context_menu { get; set; }
+
+            // Add use_address_viewer property for address viewer textbox
+            public bool? use_address_viewer { get; set; }
         }
 
         // Class for saving/restoring window state
@@ -43,6 +46,11 @@ namespace SimpleBrowserApp
             public double Height { get; set; }
             public WindowState WindowState { get; set; }
         }
+
+        private const double ZoomStep = 0.1;
+        private const double ZoomMin = 0.25;
+        private const double ZoomMax = 5.0;
+        private bool isWebView2Initialized = false;
 
         public MainWindow()
         {
@@ -65,6 +73,7 @@ namespace SimpleBrowserApp
             bool windowStateAutosave = true; // default true
             bool usePageTitle = false; // default false
             bool useBrowserContextMenu = true; // default true
+            bool useAddressViewer = false; // default false
 
             if (File.Exists(configPath))
             {
@@ -83,6 +92,7 @@ namespace SimpleBrowserApp
                     windowStateAutosave = config?.window_state_autosave ?? windowStateAutosave;
                     usePageTitle = config?.use_page_title ?? usePageTitle;
                     useBrowserContextMenu = config?.use_browser_context_menu ?? useBrowserContextMenu;
+                    useAddressViewer = config?.use_address_viewer ?? useAddressViewer;
                 }
                 catch (Exception ex)
                 {
@@ -157,6 +167,14 @@ namespace SimpleBrowserApp
             AlwaysOnTopMenuItem.Unchecked += AlwaysOnTopMenuItem_Unchecked;
             ExitMenuItem.Click += ExitMenuItem_Click;
 
+            // Register zoom menu events
+            if (this.FindName("ZoomInMenuItem") is MenuItem zoomInMenuItem)
+                zoomInMenuItem.Click += ZoomInMenuItem_Click;
+            if (this.FindName("ZoomOutMenuItem") is MenuItem zoomOutMenuItem)
+                zoomOutMenuItem.Click += ZoomOutMenuItem_Click;
+            if (this.FindName("ResetZoomMenuItem") is MenuItem resetZoomMenuItem)
+                resetZoomMenuItem.Click += ResetZoomMenuItem_Click;
+
             // Register window closing event for state autosave
             if (windowStateAutosave)
             {
@@ -230,39 +248,53 @@ namespace SimpleBrowserApp
             }
             Browser.Source = browserUri ?? new Uri("about:blank");
 
-            // --- use_page_title / use_browser_context_menu: WebView2 event hooks ---
-            if (usePageTitle || !useBrowserContextMenu)
+            // --- use_address_viewer: AddressTextBox visibility and address update ---
+            AddressTextBox.Visibility = useAddressViewer ? Visibility.Visible : Visibility.Collapsed;
+
+            // Set initial address (even if Collapsed, always update)
+            AddressTextBox.Text = Browser.Source?.ToString() ?? "";
+
+            // WebView2 navigation events to update address
+            Browser.NavigationStarting += (s, e) =>
             {
-                // WebView2 の CoreWebView2 準備完了時にイベント購読
-                Browser.CoreWebView2InitializationCompleted += (s, e) =>
+                AddressTextBox.Text = e.Uri?.ToString() ?? "";
+            };
+            Browser.NavigationCompleted += (s, e) =>
+            {
+                // After navigation, update to the current Source (in case of redirects, etc.)
+                AddressTextBox.Text = Browser.Source?.ToString() ?? "";
+            };
+
+            // --- use_page_title / use_browser_context_menu: WebView2 event hooks ---
+            Browser.CoreWebView2InitializationCompleted += (s, e) =>
+            {
+                isWebView2Initialized = true;
+                // Set initial zoom factor
+                Browser.ZoomFactor = 1.0;
+
+                // use_page_title: ページタイトルをウィンドウタイトルに反映
+                if (usePageTitle)
                 {
-                    if (Browser.CoreWebView2 != null)
+                    // 初回タイトル反映
+                    if (!string.IsNullOrEmpty(Browser.CoreWebView2.DocumentTitle))
                     {
-                        // use_page_title: ページタイトルをウィンドウタイトルに反映
-                        if (usePageTitle)
-                        {
-                            // 初回タイトル反映
-                            if (!string.IsNullOrEmpty(Browser.CoreWebView2.DocumentTitle))
-                            {
-                                this.Title = Browser.CoreWebView2.DocumentTitle;
-                            }
-                            // タイトル変更時に MainWindow のタイトルを更新
-                            Browser.CoreWebView2.DocumentTitleChanged += (sender, args) =>
-                            {
-                                this.Title = Browser.CoreWebView2.DocumentTitle;
-                            };
-                        }
-                        // use_browser_context_menu: 標準コンテキストメニュー抑止
-                        if (!useBrowserContextMenu)
-                        {
-                            Browser.CoreWebView2.ContextMenuRequested += (sender, args) =>
-                            {
-                                args.Handled = true;
-                            };
-                        }
+                        this.Title = Browser.CoreWebView2.DocumentTitle;
                     }
-                };
-            }
+                    // タイトル変更時に MainWindow のタイトルを更新
+                    Browser.CoreWebView2.DocumentTitleChanged += (sender, args) =>
+                    {
+                        this.Title = Browser.CoreWebView2.DocumentTitle;
+                    };
+                }
+                // use_browser_context_menu: 標準コンテキストメニュー抑止
+                if (!useBrowserContextMenu)
+                {
+                    Browser.CoreWebView2.ContextMenuRequested += (sender, args) =>
+                    {
+                        args.Handled = true;
+                    };
+                }
+            };
         }
 
         // Toggle Topmost property when the menu item is checked/unchecked
@@ -280,6 +312,36 @@ namespace SimpleBrowserApp
         private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
+        }
+        // Zoom In menu click handler
+        private void ZoomInMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (isWebView2Initialized)
+            {
+                double currentZoom = Browser.ZoomFactor;
+                double newZoom = Math.Min(currentZoom + ZoomStep, ZoomMax);
+                Browser.ZoomFactor = newZoom;
+            }
+        }
+
+        // Zoom Out menu click handler
+        private void ZoomOutMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (isWebView2Initialized)
+            {
+                double currentZoom = Browser.ZoomFactor;
+                double newZoom = Math.Max(currentZoom - ZoomStep, ZoomMin);
+                Browser.ZoomFactor = newZoom;
+            }
+        }
+
+        // Reset Zoom menu click handler
+        private void ResetZoomMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (isWebView2Initialized)
+            {
+                Browser.ZoomFactor = 1.0;
+            }
         }
     }
 }
