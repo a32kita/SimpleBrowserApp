@@ -11,6 +11,7 @@ A customizable WPF desktop application featuring a built-in browser (WebView2) a
 - Menu includes:
   - "Always on Top" (checkable)
   - "Exit"
+- Optionally displays a read-only address viewer above the browser, controlled by the `use_address_viewer` config option.
 - All settings are loaded at startup from a config file named `[ExecutableName]-config.json` placed in the same directory as the executable.
 
 ## Configuration File (`[ExecutableName]-config.json`)
@@ -29,6 +30,7 @@ All properties are optional; defaults are used if not specified.
 | window_state_autosave | bool | Whether to automatically save and restore the window's position, size, and state (maximized/normal) on close and next launch. | true |
 | use_page_title | bool | If true, the window title will follow the currently displayed page's title in the browser view (WebView2). If false, the title is fixed as specified by the `title` property or default. | false |
 | use_browser_context_menu | bool | If true, the standard WebView2 context menu (right-click menu) is enabled. If false, the context menu is disabled. | true |
+| use_address_viewer | bool | If true, displays a read-only address viewer textbox above the browser showing the current page URL. If false or omitted, the address viewer is hidden. | false |
 
 ### Example `SimpleBrowserApp-config.json`
 ```json
@@ -39,7 +41,8 @@ All properties are optional; defaults are used if not specified.
   "window_width": 900,
   "window_height": 600,
   "html_path": "app.html",
-  "window_icon": "appicon.ico"
+  "window_icon": "appicon.ico",
+  "use_address_viewer": true
 }
 ```
 #### Example with use_browser_context_menu disabled
@@ -73,6 +76,12 @@ All properties are optional; defaults are used if not specified.
 ```json
 {
   "html_path": "https://example.com"
+}
+```
+#### Example with use_address_viewer enabled
+```json
+{
+  "use_address_viewer": true
 }
 ```
 
@@ -118,6 +127,14 @@ All properties are optional; defaults are used if not specified.
   - If `window_icon` is `null`, omitted, or not a valid `.ico` file, the default executable icon is used.
   - If the file does not exist or the extension is not `.ico`, the default icon is used.
   - If a valid `.ico` file is specified, it is used as the window icon.
+
+### `use_address_viewer` property details
+- **Type:** bool (optional)
+- **Default:** false
+- **Behavior:**
+  - If `true`, a read-only address viewer textbox is displayed above the browser, always showing the current page URL.
+  - If `false` or omitted, the address viewer is hidden.
+  - The address is always updated internally, regardless of visibility.
 
 ## Requirements
 - .NET 8.0 or later

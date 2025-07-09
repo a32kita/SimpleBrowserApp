@@ -32,6 +32,9 @@ namespace SimpleBrowserApp
 
             // Add use_browser_context_menu property for controlling WebView2 context menu
             public bool? use_browser_context_menu { get; set; }
+
+            // Add use_address_viewer property for address viewer textbox
+            public bool? use_address_viewer { get; set; }
         }
 
         // Class for saving/restoring window state
@@ -70,6 +73,7 @@ namespace SimpleBrowserApp
             bool windowStateAutosave = true; // default true
             bool usePageTitle = false; // default false
             bool useBrowserContextMenu = true; // default true
+            bool useAddressViewer = false; // default false
 
             if (File.Exists(configPath))
             {
@@ -88,6 +92,7 @@ namespace SimpleBrowserApp
                     windowStateAutosave = config?.window_state_autosave ?? windowStateAutosave;
                     usePageTitle = config?.use_page_title ?? usePageTitle;
                     useBrowserContextMenu = config?.use_browser_context_menu ?? useBrowserContextMenu;
+                    useAddressViewer = config?.use_address_viewer ?? useAddressViewer;
                 }
                 catch (Exception ex)
                 {
@@ -242,6 +247,23 @@ namespace SimpleBrowserApp
                 }
             }
             Browser.Source = browserUri ?? new Uri("about:blank");
+
+            // --- use_address_viewer: AddressTextBox visibility and address update ---
+            AddressTextBox.Visibility = useAddressViewer ? Visibility.Visible : Visibility.Collapsed;
+
+            // Set initial address (even if Collapsed, always update)
+            AddressTextBox.Text = Browser.Source?.ToString() ?? "";
+
+            // WebView2 navigation events to update address
+            Browser.NavigationStarting += (s, e) =>
+            {
+                AddressTextBox.Text = e.Uri?.ToString() ?? "";
+            };
+            Browser.NavigationCompleted += (s, e) =>
+            {
+                // After navigation, update to the current Source (in case of redirects, etc.)
+                AddressTextBox.Text = Browser.Source?.ToString() ?? "";
+            };
 
             // --- use_page_title / use_browser_context_menu: WebView2 event hooks ---
             Browser.CoreWebView2InitializationCompleted += (s, e) =>
