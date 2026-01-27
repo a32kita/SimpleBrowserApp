@@ -31,6 +31,7 @@ All properties are optional; defaults are used if not specified.
 | use_page_title | bool | If true, the window title will follow the currently displayed page's title in the browser view (WebView2). If false, the title is fixed as specified by the `title` property or default. | false |
 | use_browser_context_menu | bool | If true, the standard WebView2 context menu (right-click menu) is enabled. If false, the context menu is disabled. | true |
 | use_address_viewer | bool | If true, displays a read-only address viewer textbox above the browser showing the current page URL. If false or omitted, the address viewer is hidden. | false |
+| browser_cache_directory | string | Directory path for WebView2 browser cache and user data.<br>Supports absolute path, relative path from executable, or environment variables.<br>If omitted or empty, uses the default WebView2 cache location.<br>**Also affects location of window state autosave file.** | "" (empty, uses default) |
 
 ### Example `SimpleBrowserApp-config.json`
 ```json
@@ -85,6 +86,25 @@ All properties are optional; defaults are used if not specified.
 }
 ```
 
+#### Example with browser_cache_directory specified
+```json
+{
+  "browser_cache_directory": "cache"
+}
+```
+#### Example with absolute path
+```json
+{
+  "browser_cache_directory": "C:/Users/YourName/AppCache"
+}
+```
+#### Example with environment variable
+```json
+{
+  "browser_cache_directory": "%TEMP%/SimpleBrowserCache"
+}
+```
+
 ## How It Works
 
 ### `use_browser_context_menu` property details
@@ -135,6 +155,16 @@ All properties are optional; defaults are used if not specified.
   - If `true`, a read-only address viewer textbox is displayed above the browser, always showing the current page URL.
   - If `false` or omitted, the address viewer is hidden.
   - The address is always updated internally, regardless of visibility.
+
+### `browser_cache_directory` property details
+- **Type:** string (optional)
+- **Default:** "" (empty string, uses WebView2 default cache location)
+- **Behavior:**
+  - If specified, sets the directory for WebView2 browser cache and user data (cookies, history, etc.).
+  - Supports absolute path, relative path from the executable, or environment variable expansion (e.g., `%TEMP%`).
+  - If the directory does not exist, it will be created automatically.
+  - If omitted or empty, uses the default WebView2 cache location.
+  - **Note:** The window state autosave file (`[ExecutableName]-windowstate.json`) will also be stored in this directory if specified.
 
 ## Requirements
 - .NET 8.0 or later
