@@ -35,6 +35,9 @@ namespace SimpleBrowserApp
 
             // Add use_address_viewer property for address viewer textbox
             public bool? use_address_viewer { get; set; }
+
+            // Add browser_cache_directory property for WebView2 user data folder
+            public string? browser_cache_directory { get; set; }
         }
 
         // Class for saving/restoring window state
@@ -74,6 +77,7 @@ namespace SimpleBrowserApp
             bool usePageTitle = false; // default false
             bool useBrowserContextMenu = true; // default true
             bool useAddressViewer = false; // default false
+            string browserCacheDirectory = String.Empty; // default empty (use default WebView2 cache location)
 
             if (File.Exists(configPath))
             {
@@ -93,6 +97,7 @@ namespace SimpleBrowserApp
                     usePageTitle = config?.use_page_title ?? usePageTitle;
                     useBrowserContextMenu = config?.use_browser_context_menu ?? useBrowserContextMenu;
                     useAddressViewer = config?.use_address_viewer ?? useAddressViewer;
+                    browserCacheDirectory = config?.browser_cache_directory ?? browserCacheDirectory;
                 }
                 catch (Exception ex)
                 {
@@ -106,8 +111,40 @@ namespace SimpleBrowserApp
             this.Width = windowWidth;
             this.Height = windowHeight;
 
+            var expandedBrowserCacheDirectory = String.Empty;
+            var resolvedCachePath = String.Empty;
+            if (!String.IsNullOrEmpty(browserCacheDirectory))
+            {
+                expandedBrowserCacheDirectory = Environment.ExpandEnvironmentVariables(browserCacheDirectory);
+                resolvedCachePath = expandedBrowserCacheDirectory;
+                if (!Path.IsPathRooted(resolvedCachePath))
+                {
+                    resolvedCachePath = Path.Combine(exeDir, resolvedCachePath);
+                }
+
+                Directory.CreateDirectory(resolvedCachePath);
+            }
+
+            // Apply WebView2 user data folder if specified
+            if (!string.IsNullOrEmpty(resolvedCachePath))
+            {
+                //Task.Run(async() => await Browser.EnsureCoreWebView2Async(await Microsoft.Web.WebView2.Core.CoreWebView2Environment.CreateAsync(null, userDataFolder, env))).Wait();
+
+                var props = new Microsoft.Web.WebView2.Wpf.CoreWebView2CreationProperties()
+                {
+                    UserDataFolder = resolvedCachePath
+                };
+
+                this.Browser.CreationProperties = props;
+                this.Loaded += async(sender, e) => await Browser.EnsureCoreWebView2Async();
+            }
+
             // Restore window state if autosave enabled
-            string windowStatePath = Path.Combine(exeDir, $"{exeName}-windowstate.json");
+            var wsJsonDir = exeDir;
+            if (!String.IsNullOrEmpty(resolvedCachePath))
+                wsJsonDir = resolvedCachePath;
+
+            var windowStatePath = Path.Combine(wsJsonDir, $"{exeName}-windowstate.json");
             if (windowStateAutosave && File.Exists(windowStatePath))
             {
                 try

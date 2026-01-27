@@ -9,5 +9,6 @@
   "window_icon": "appicon_sub.ico",
   "window_state_autosave": true,
   "use_browser_context_menu": true,
-  "use_address_viewer": false
+  "use_address_viewer": false,
+  "browser_cache_directory": "%TEMP%\\eobw\\simple-browser-app-build"
 }
